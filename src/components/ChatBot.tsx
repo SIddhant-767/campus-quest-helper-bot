@@ -6,6 +6,7 @@ import ChatInput from './ChatInput';
 import ChatMessage, { ChatMessageProps } from './ChatMessage';
 import CustomQuestionDialog from './CustomQuestionDialog';
 import WelcomeMessage from './WelcomeMessage';
+import QuickQuestions from './QuickQuestions';
 import { findMatchingFAQ, generateFallbackResponse } from '@/utils/faqMatcher';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   const [messages, setMessages] = useState<ChatMessageProps[]>([]);
   const [processingMessage, setProcessingMessage] = useState(false);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, 'positive' | 'negative' | null>>({});
+  const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +32,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
 
   const processUserMessage = async (userInput: string) => {
     if (!userInput.trim()) return;
+    
+    // Hide quick questions when user sends a message
+    setShowQuickQuestions(false);
     
     // Add user message to chat
     const userMessageId = uuidv4();
@@ -61,6 +66,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     
     setMessages(prev => [...prev, botMessage]);
     setProcessingMessage(false);
+    
+    // Show quick questions again after bot responds
+    setShowQuickQuestions(true);
   };
 
   const handleSendMessage = (message: string) => {
@@ -108,14 +116,20 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         {messages.length === 0 ? (
           <WelcomeMessage onQuickQuestionClick={handleQuickQuestion} />
         ) : (
-          messages.map(message => (
-            <ChatMessage 
-              key={message.id}
-              {...message}
-              feedback={feedbackMap[message.id]}
-              onFeedback={handleFeedback}
-            />
-          ))
+          <>
+            {messages.map(message => (
+              <ChatMessage 
+                key={message.id}
+                {...message}
+                feedback={feedbackMap[message.id]}
+                onFeedback={handleFeedback}
+              />
+            ))}
+            
+            {showQuickQuestions && !processingMessage && messages.length > 0 && (
+              <QuickQuestions onQuickQuestionClick={handleQuickQuestion} />
+            )}
+          </>
         )}
         
         {processingMessage && (
