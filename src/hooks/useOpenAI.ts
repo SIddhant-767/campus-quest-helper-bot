@@ -1,20 +1,15 @@
 
 import { useState } from 'react';
 
-export function useOpenAI() {
-  // Get API key from localStorage or empty string if not set
-  const [apiKey, setApiKey] = useState<string>(
-    () => localStorage.getItem('openai_api_key') || ''
-  );
+// Hardcoded API key - replace with your actual OpenAI API key
+const HARDCODED_API_KEY = "your-openai-api-key-here";
 
-  const saveApiKey = (key: string) => {
-    localStorage.setItem('openai_api_key', key);
-    setApiKey(key);
-  };
+export function useOpenAI() {
+  // Use the hardcoded API key instead of getting from localStorage
+  const [apiKey] = useState<string>(HARDCODED_API_KEY);
 
   return {
     apiKey,
-    setApiKey: saveApiKey,
-    hasApiKey: !!apiKey
+    hasApiKey: true
   };
 }

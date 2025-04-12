@@ -8,10 +8,10 @@ import CustomQuestionDialog from './CustomQuestionDialog';
 import WelcomeMessage from './WelcomeMessage';
 import QuickQuestions from './QuickQuestions';
 import ApiKeyDialog from './ApiKeyDialog';
+import { getOpenAIResponse } from '@/utils/openAI';
 import { useOpenAI } from '@/hooks/useOpenAI';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
-import { findMatchingFAQ, generateFallbackResponse } from '@/utils/faqMatcher';
 
 interface ChatBotProps {
   className?: string;
@@ -23,7 +23,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   const [feedbackMap, setFeedbackMap] = useState<Record<string, 'positive' | 'negative' | null>>({});
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   
-  const { apiKey } = useOpenAI();
+  const { apiKey, hasApiKey } = useOpenAI();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,14 +51,14 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     setMessages(prev => [...prev, userMessage]);
     setProcessingMessage(true);
     
-    // Generate bot response using FAQ matcher
+    // Generate bot response using OpenAI
     let botResponse;
-    const matchingFAQ = findMatchingFAQ(userInput);
     
-    if (matchingFAQ) {
-      botResponse = matchingFAQ.answer;
-    } else {
-      botResponse = generateFallbackResponse(userInput);
+    try {
+      botResponse = await getOpenAIResponse(userInput, apiKey);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      botResponse = "Sorry, I encountered an error. Please try again later.";
     }
     
     // Generate bot message
@@ -71,14 +71,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
       showFeedback: true,
     };
     
-    // Simulate a short delay to make it feel more natural
-    setTimeout(() => {
-      setMessages(prev => [...prev, botMessage]);
-      setProcessingMessage(false);
-      
-      // Show quick questions again after bot responds
-      setShowQuickQuestions(true);
-    }, 500);
+    setMessages(prev => [...prev, botMessage]);
+    setProcessingMessage(false);
+    
+    // Show quick questions again after bot responds
+    setShowQuickQuestions(true);
   };
 
   const handleSendMessage = (message: string) => {
@@ -113,9 +110,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     )}>
       <ChatHeader 
         title="College AI Assistant" 
-        subtitle="Powered by Local FAQ Database" 
+        subtitle="Powered by OpenAI" 
       />
-      <ApiKeyDialog apiKey={apiKey} onSaveApiKey={() => {}} />
       
       <div 
         ref={chatContainerRef}
