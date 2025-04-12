@@ -25,9 +25,9 @@ const Index = () => {
       </main>
       
       <footer className="container mx-auto py-4 text-center text-muted-foreground text-sm">
-        <p>College FAQ Chatbot © {new Date().getFullYear()}</p>
+        <p>College AI Assistant © {new Date().getFullYear()}</p>
         <p className="text-xs mt-1">
-          Placeholder for future OpenAI integration for unknown questions
+          Powered by OpenAI GPT. Your API key is stored locally in your browser.
         </p>
       </footer>
     </div>

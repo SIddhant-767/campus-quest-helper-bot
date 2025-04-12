@@ -7,7 +7,9 @@ import ChatMessage, { ChatMessageProps } from './ChatMessage';
 import CustomQuestionDialog from './CustomQuestionDialog';
 import WelcomeMessage from './WelcomeMessage';
 import QuickQuestions from './QuickQuestions';
-import { findMatchingFAQ, generateFallbackResponse } from '@/utils/faqMatcher';
+import ApiKeyDialog from './ApiKeyDialog';
+import { getOpenAIResponse } from '@/utils/openAI';
+import { useOpenAI } from '@/hooks/useOpenAI';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
@@ -21,6 +23,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   const [feedbackMap, setFeedbackMap] = useState<Record<string, 'positive' | 'negative' | null>>({});
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   
+  const { apiKey, setApiKey, hasApiKey } = useOpenAI();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,16 +51,24 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     setMessages(prev => [...prev, userMessage]);
     setProcessingMessage(true);
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Generate bot response using OpenAI
+    let botResponse;
     
-    // Find matching FAQ
-    const matchingFAQ = findMatchingFAQ(userInput);
+    if (!hasApiKey) {
+      botResponse = "Please add your OpenAI API key in the settings (top-right gear icon) to enable AI responses.";
+    } else {
+      try {
+        botResponse = await getOpenAIResponse(userInput, apiKey);
+      } catch (error) {
+        console.error("Error getting AI response:", error);
+        botResponse = "Sorry, I encountered an error. Please try again later.";
+      }
+    }
     
-    // Generate bot response
+    // Generate bot message
     const botMessageId = uuidv4();
     const botMessage: ChatMessageProps = {
-      content: matchingFAQ ? matchingFAQ.answer : generateFallbackResponse(userInput),
+      content: botResponse,
       type: 'bot',
       timestamp: new Date(),
       id: botMessageId,
@@ -89,9 +100,6 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   };
 
   const handleCustomQuestion = (question: string) => {
-    // Here you would typically send this to an API
-    console.log('Custom question submitted:', question);
-    // For now, we'll just add it to the chat
     processUserMessage(question);
   };
 
@@ -101,13 +109,14 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
 
   return (
     <div className={cn(
-      "flex flex-col h-[calc(100vh-4rem)] max-h-[800px] rounded-lg border shadow-sm overflow-hidden bg-background",
+      "flex flex-col h-[calc(100vh-4rem)] max-h-[800px] rounded-lg border shadow-sm overflow-hidden bg-background relative",
       className
     )}>
       <ChatHeader 
-        title="College FAQ Helper" 
-        subtitle="Ask me anything about your college" 
+        title="College AI Assistant" 
+        subtitle="Powered by OpenAI" 
       />
+      <ApiKeyDialog apiKey={apiKey} onSaveApiKey={setApiKey} />
       
       <div 
         ref={chatContainerRef}
