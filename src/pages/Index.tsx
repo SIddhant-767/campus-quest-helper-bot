@@ -27,7 +27,7 @@ const Index = () => {
       <footer className="container mx-auto py-4 text-center text-muted-foreground text-sm">
         <p>College AI Assistant © {new Date().getFullYear()}</p>
         <p className="text-xs mt-1">
-          Powered by OpenAI GPT. Your API key is stored locally in your browser.
+          Powered by local FAQ database. No external API calls required.
         </p>
       </footer>
     </div>
