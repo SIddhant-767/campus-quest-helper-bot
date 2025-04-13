@@ -16,9 +16,11 @@ export async function getOpenAIResponse(
     }
 
     // Initialize the OpenAI client with OpenRouter configuration
+    // Added dangerouslyAllowBrowser: true to allow client-side usage
     const openai = new OpenAI({
       baseURL: 'https://openrouter.ai/api/v1',
       apiKey: apiKey,
+      dangerouslyAllowBrowser: true, // Allow browser usage
       defaultHeaders: {
         'HTTP-Referer': window.location.origin, // Current site URL
         'X-Title': 'College Quest', // Site title
