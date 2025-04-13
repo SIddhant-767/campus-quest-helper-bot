@@ -1,19 +1,9 @@
 
 import { generateLocalResponse } from './localResponses';
-
-interface DeepSeekResponse {
-  choices: {
-    message: {
-      content: string;
-    };
-  }[];
-  error?: {
-    message: string;
-  };
-}
+import OpenAI from 'openai';
 
 /**
- * Sends a message to DeepSeek API and returns the response
+ * Sends a message to OpenRouter API using OpenAI SDK and returns the response
  * Falls back to local responses if API key is invalid
  */
 export async function getOpenAIResponse(
@@ -22,49 +12,48 @@ export async function getOpenAIResponse(
 ): Promise<string> {
   try {
     if (!apiKey) {
-      return "Please provide a DeepSeek API key in the settings to enable AI responses.";
+      return "Please provide an API key in the settings to enable AI responses.";
     }
 
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+    // Initialize the OpenAI client with OpenRouter configuration
+    const openai = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: apiKey,
+      defaultHeaders: {
+        'HTTP-Referer': window.location.origin, // Current site URL
+        'X-Title': 'College Quest', // Site title
       },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful college assistant that provides accurate and concise information about college-related questions. Keep responses under 150 words when possible."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
     });
 
-    const data = await response.json() as DeepSeekResponse;
+    // Make the API call using the OpenAI SDK
+    const completion = await openai.chat.completions.create({
+      model: 'openai/gpt-4o', // Using GPT-4o through OpenRouter
+      messages: [
+        {
+          role: 'system',
+          content: "You are a helpful college assistant that provides accurate and concise information about college-related questions. Keep responses under 150 words when possible."
+        },
+        {
+          role: 'user',
+          content: message
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 500,
+    });
 
-    if (data.error) {
-      console.error("DeepSeek API error:", data.error);
-      
-      // If it's an authentication error, use local responses instead
-      if (data.error.message && data.error.message.includes("Authentication Fails")) {
-        // Return a local response instead
-        return generateLocalResponse(message);
-      }
-      
-      return `Error: ${data.error.message || "Failed to get response from DeepSeek"}`;
-    }
+    // Extract the response from the completion
+    return completion.choices[0].message.content || "I couldn't generate a response. Please try again.";
 
-    return data.choices[0].message.content || "I couldn't generate a response. Please try again.";
   } catch (error) {
-    console.error("Error calling DeepSeek:", error);
+    console.error("Error calling OpenRouter:", error);
+    
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes("Authentication")) {
+      console.log("Authentication error, falling back to local responses");
+      return generateLocalResponse(message);
+    }
+    
     // Fallback to local responses on any error
     return generateLocalResponse(message);
   }
