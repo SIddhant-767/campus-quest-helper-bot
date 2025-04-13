@@ -1,4 +1,6 @@
 
+import { generateLocalResponse } from './localResponses';
+
 interface DeepSeekResponse {
   choices: {
     message: {
@@ -12,6 +14,7 @@ interface DeepSeekResponse {
 
 /**
  * Sends a message to DeepSeek API and returns the response
+ * Falls back to local responses if API key is invalid
  */
 export async function getOpenAIResponse(
   message: string, 
@@ -49,12 +52,20 @@ export async function getOpenAIResponse(
 
     if (data.error) {
       console.error("DeepSeek API error:", data.error);
+      
+      // If it's an authentication error, use local responses instead
+      if (data.error.message && data.error.message.includes("Authentication Fails")) {
+        // Return a local response instead
+        return generateLocalResponse(message);
+      }
+      
       return `Error: ${data.error.message || "Failed to get response from DeepSeek"}`;
     }
 
     return data.choices[0].message.content || "I couldn't generate a response. Please try again.";
   } catch (error) {
     console.error("Error calling DeepSeek:", error);
-    return "There was an error connecting to the AI service. Please try again later.";
+    // Fallback to local responses on any error
+    return generateLocalResponse(message);
   }
 }

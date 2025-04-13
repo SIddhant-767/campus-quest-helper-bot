@@ -23,8 +23,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   const [feedbackMap, setFeedbackMap] = useState<Record<string, 'positive' | 'negative' | null>>({});
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   
-  const { apiKey, hasApiKey } = useOpenAI();
+  const { apiKey, hasApiKey, isValidKey, setIsValidKey } = useOpenAI();
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [checkedApiKey, setCheckedApiKey] = useState(false);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -32,6 +33,29 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Check API key validity on component mount
+  useEffect(() => {
+    if (!checkedApiKey && hasApiKey) {
+      checkApiKeyValidity();
+    }
+  }, [checkedApiKey, hasApiKey]);
+
+  const checkApiKeyValidity = async () => {
+    try {
+      // Send a test message to check API key validity
+      const testResponse = await getOpenAIResponse("test message", apiKey);
+      
+      // If we get a proper response (not an error message)
+      if (!testResponse.startsWith("Error:")) {
+        setIsValidKey(true);
+      }
+      setCheckedApiKey(true);
+    } catch (error) {
+      console.error("Error checking API key validity:", error);
+      setCheckedApiKey(true);
+    }
+  };
 
   const processUserMessage = async (userInput: string) => {
     if (!userInput.trim()) return;
@@ -110,7 +134,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     )}>
       <ChatHeader 
         title="College AI Assistant" 
-        subtitle="Powered by OpenAI" 
+        subtitle={isValidKey ? "Powered by DeepSeek AI" : "Offline Mode"} 
       />
       
       <div 

@@ -3,8 +3,11 @@ import React from 'react';
 import ChatBot from '@/components/ChatBot';
 import { GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useOpenAI } from '@/hooks/useOpenAI';
 
 const Index = () => {
+  const { isValidKey } = useOpenAI();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex flex-col">
       <header className="container mx-auto py-4 flex justify-between items-center">
@@ -27,7 +30,9 @@ const Index = () => {
       <footer className="container mx-auto py-4 text-center text-muted-foreground text-sm">
         <p>College AI Assistant © {new Date().getFullYear()}</p>
         <p className="text-xs mt-1">
-          Powered by DeepSeek AI. No API key needed.
+          {isValidKey 
+            ? "Powered by DeepSeek AI. No API key needed." 
+            : "Running in offline mode with local responses."}
         </p>
       </footer>
     </div>
