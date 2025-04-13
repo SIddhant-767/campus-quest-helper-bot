@@ -1,9 +1,10 @@
 
 import React from 'react';
 import ChatBot from '@/components/ChatBot';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, FileQuestion } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOpenAI } from '@/hooks/useOpenAI';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { isValidKey } = useOpenAI();
@@ -15,10 +16,18 @@ const Index = () => {
           <GraduationCap className="h-6 w-6 text-primary" />
           <h1 className="text-xl font-bold">College Quest</h1>
         </div>
-        <Button variant="outline" size="sm" disabled>
-          Sign in with Google
-          <span className="ml-2 text-xs bg-muted px-1.5 py-0.5 rounded-full">Coming soon</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/faq">
+              <FileQuestion className="h-4 w-4 mr-2" />
+              Browse FAQs
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" disabled>
+            Sign in with Google
+            <span className="ml-2 text-xs bg-muted px-1.5 py-0.5 rounded-full">Coming soon</span>
+          </Button>
+        </div>
       </header>
       
       <main className="container mx-auto flex-1 py-6 px-4">
@@ -31,7 +40,7 @@ const Index = () => {
         <p>College AI Assistant © {new Date().getFullYear()}</p>
         <p className="text-xs mt-1">
           {isValidKey 
-            ? "Powered by DeepSeek AI. No API key needed." 
+            ? "Powered by OpenAI. No API key needed." 
             : "Running in offline mode with local responses."}
         </p>
       </footer>

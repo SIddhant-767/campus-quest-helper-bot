@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { BookOpen, Clock, FileQuestion, Users } from 'lucide-react';
+import { BookOpen, Clock, FileQuestion, Users, DollarSign, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 interface QuickQuestionProps {
   icon: React.ReactNode;
@@ -29,26 +30,34 @@ interface QuickQuestionsProps {
 const QuickQuestions: React.FC<QuickQuestionsProps> = ({ onQuickQuestionClick }) => {
   const quickQuestions = [
     {
-      icon: <Clock className="h-4 w-4" />,
-      text: "When are the semester exams?",
+      icon: <DollarSign className="h-4 w-4" />,
+      text: "What is the fee for B.Tech?",
     },
     {
       icon: <Users className="h-4 w-4" />,
-      text: "How do I apply for hostel accommodation?",
+      text: "Is there a hostel facility?",
     },
     {
-      icon: <BookOpen className="h-4 w-4" />,
-      text: "What are the library hours?",
+      icon: <Clock className="h-4 w-4" />,
+      text: "When does admission start?",
     },
     {
-      icon: <FileQuestion className="h-4 w-4" />,
-      text: "How do I join student clubs?",
+      icon: <GraduationCap className="h-4 w-4" />,
+      text: "What streams are available in B.Tech?",
     },
   ];
 
   return (
     <div className="p-3 bg-muted/30 rounded-lg">
-      <h3 className="text-sm font-medium text-muted-foreground mb-2">More questions:</h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-medium text-muted-foreground">More questions:</h3>
+        <Button variant="ghost" size="sm" asChild className="h-7 px-2">
+          <Link to="/faq">
+            <FileQuestion className="h-4 w-4 mr-1" />
+            All FAQs
+          </Link>
+        </Button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {quickQuestions.map((question, index) => (
           <QuickQuestion
