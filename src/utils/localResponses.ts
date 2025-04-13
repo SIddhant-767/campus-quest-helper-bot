@@ -1,5 +1,5 @@
 
-import { matchQuestionToFAQ } from './faqMatcher';
+import { findMatchingFAQ } from './faqMatcher';
 import { faqData } from '@/data/faqData';
 
 /**
@@ -8,7 +8,7 @@ import { faqData } from '@/data/faqData';
  */
 export function generateLocalResponse(message: string): string {
   // First, try to match with our FAQ database
-  const faqMatch = matchQuestionToFAQ(message, faqData);
+  const faqMatch = findMatchingFAQ(message);
   if (faqMatch) {
     return faqMatch.answer;
   }
