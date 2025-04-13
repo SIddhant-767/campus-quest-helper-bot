@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
 
-// Hardcoded API key - replace with your actual OpenAI API key
-const HARDCODED_API_KEY = "AIzaSyBGWVW8vJ7H_Nyo6gSRBpln9u7CikA9kzs";
+// Hardcoded API key - replace with your actual DeepSeek API key
+const HARDCODED_API_KEY = "sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 export function useOpenAI() {
   // Use the hardcoded API key instead of getting from localStorage
